@@ -1,14 +1,25 @@
-import { useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Cropper } from "react-cropper";
 import "cropperjs/dist/cropper.css";
 import "./styles/imageupload.css"
 
-const ImageUpload = (props: any) => {
+interface IMGProps{
+    setCroppedImage: (value: string) => void;
+    setOriginalImage: (value: string) => void;
+    round?: boolean;
+    width?: number;
+    aspect: number;
+    color?: string;
+    sizeLimit?: number;
+}
+
+const ImageUpload = (props: IMGProps) => {
 
     const [fileInput, setFileInput] = useState<any>();
     const [hasInput, setHasInput] = useState(false);
     const [croppedImage, setCroppedImage] = useState<any>();
     const [fileName, setFileName] = useState<string>("");
+    const [statusMessage, setStatusMessage] = useState("");
     
 
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -30,10 +41,17 @@ const ImageUpload = (props: any) => {
 
     const handleFile = async(e: any) => {
         const file = e.currentTarget.files[0];
-
-        console.log(file);
-        setFileName(file.name);
-        getBase64(file);
+        if(props.sizeLimit && file.size > props.sizeLimit)
+        {
+            setStatusMessage("File is too large.");
+        }
+        else
+        {
+            console.log(file);
+            setFileName(file.name);
+            getBase64(file);
+        }
+        
     }
 
     const clearFileInput = () => {
@@ -46,9 +64,10 @@ const ImageUpload = (props: any) => {
     const saveImage = () => {
         props.setCroppedImage(croppedImage);
         props.setOriginalImage(fileInput);
+        setStatusMessage("Image Saved Successfully");
     }
 
-    const dropHandler =(ev: any) => {
+    const dropHandler = (ev: any) => {
         console.log("File(s) dropped");
         
         // Prevent default behavior (Prevent file from being opened)
@@ -59,9 +78,21 @@ const ImageUpload = (props: any) => {
             [...ev.dataTransfer.items].forEach((item, i) => {
             if (item.kind === "file" && (item.type === "image/png" || item.type === "image/gif" || item.type === "image/jpg" || item.type === "image/jpeg")) {
                 const file = item.getAsFile();
-                console.log(`… file[${i}].name = ${file.name}`);
-                setFileName(file.name);
-                getBase64(file);
+                if(props.sizeLimit && file.size > props.sizeLimit)
+                {
+                    setStatusMessage("File is too large.");
+                }
+                else
+                {
+                    console.log(`… file[${i}].name = ${file.name}`);
+                    setFileName(file.name);
+                    getBase64(file);
+                }
+                
+            }
+            else
+            {
+                setStatusMessage("Invalid file type.");
             }
             });
         } else {
@@ -86,6 +117,12 @@ const ImageUpload = (props: any) => {
         showEditor();
     }, [fileInput])
 
+    useEffect(() => {
+        setTimeout(() => {
+            setStatusMessage("");
+        }, 2000);
+    }, [statusMessage])
+
 
     const showEditor = () => {
         if(fileInput) dialogRef.current?.showModal();
@@ -103,18 +140,19 @@ const ImageUpload = (props: any) => {
             {croppedImage && 
             <div id="img-display">
                 <div id="clear-button" onClick={() => {clearFileInput()}}>𐌢</div>
-                <img id={props.round ? "round" : ""} width={props.width || 250} src={croppedImage} />
-                <div id="options-row">
+                <img id={props.round ? "round" : ""} width={props.width || 250 + "px"} src={croppedImage} />
+                <div id="options-row" style={{width: props.width  || 250 + "px"}}>
                     <button id="edit-button" onClick={showEditor}>Edit</button>
-                    <button id="save-button" style={{backgroundColor: props.color ? props.color : "dodgerblue"}} onClick={saveImage}>Save</button>
+                    <button id="save-button" style={{backgroundColor: props.color ? props.color : "dodgerblue"}} onClick={() => saveImage()}>Save</button>
                 </div>
             </div>
             }
-            <div id="drop-zone" style={{borderColor: props.color ? props.color : "dodgerblue"}} onDrop={() => dropHandler(event)} onDragOver={() => dragOverHandler(event)}>
+            <div id="drop-zone" style={{borderColor: props.color ? props.color : "dodgerblue", width: props.width || 250 + "px"}} onDrop={() => dropHandler(event)} onDragOver={() => dragOverHandler(event)}>
                 <p id="drop-label">Click or drag a file to <i>upload</i>.</p>
-                <input id="image-input" type="file" accept=".png,.jpg,.jpeg,.gif" onInput={(e) => {handleFile(e)}} />
+                <input id="image-input" style={{width: props.width || 250 + "px"}} type="file" accept=".png,.jpg,.jpeg,.gif" onInput={(e) => {handleFile(e)}} />
                 {fileInput && <p id="file-name">{fileName}</p>}
             </div>
+            {statusMessage && <p id="status-msg">{statusMessage}</p>}
             <dialog ref={dialogRef} id="editor">
                 <div id={props.round ? "round" : "rect"}>
                     <Cropper
@@ -126,7 +164,9 @@ const ImageUpload = (props: any) => {
                         ref={cropperRef}
                     />
                 </div>
-                <button id="crop-button" onClick={onCrop}>Crop</button>
+                <div id="editor-button-row">
+                    <button id="crop-button" onClick={onCrop}>Crop</button>
+                </div>
             </dialog>
         </div>
      );

@@ -22,7 +22,6 @@ img#round{
     position: relative;
     border: 2px solid;
     border-radius: 3%;
-    width: 250px;
     height: 100px;
 }
 
@@ -57,7 +56,6 @@ img#round{
     left: 0;
     bottom: 0;
     right: 0;
-    width: 100%;
     height: 100%;
 }
 
@@ -100,4 +98,37 @@ img#round{
 
 #save-button:hover, #edit-button:hover{
     box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;;
+}
+
+#status-msg{
+    color: black;
+}
+
+button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: border-color 0.25s;
+}
+button:hover {
+    border-color: #646cff;
+}
+button:focus, button:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
+}
+
+#crop-button{
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#editor-button-row{
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

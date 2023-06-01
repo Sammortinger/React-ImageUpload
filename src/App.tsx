@@ -4,9 +4,12 @@ import ImageUpload from './components/ImageUpload'
 
 function App() {
 
+  const [croppedImage, setCroppedImage] = useState<string>();
+  const [fullImage, setFullImage] = useState<string>();
+
   return (
     <>
-      <ImageUpload round aspect={1}/>
+      <ImageUpload setCroppedImage={setCroppedImage} setOriginalImage={setFullImage} round aspect={1} sizeLimit={150000}/>
     </>
   )
 }
